@@ -1,10 +1,15 @@
-# iMIS-iPart-Template
+# iMIS SMS iPart
 
 ***This project documentation and code was generated with assistance from AI.***
 
-# iMIS iPart Template — React TypeScript
+A Vite + React iPart for the iMIS platform that allows staff to compose and send SMS messages to targeted member groups.
 
-A React TypeScript template for building iMIS iParts. This project uses Vite for development and builds to static HTML/JS/CSS that can be deployed as an iPart in iMIS.
+## Features
+
+- Select a recipient group type: **Member**, **Committee**, or **Dynamic**
+- Refine recipients with a flexible **query builder** supporting multi-select, async search, and date/text filters across member fields
+- Compose messages with an **emoji picker** and a live character counter that adapts to GSM-7 (160 chars) or UCS-2 (70 chars) encoding
+- Two authentication modes: **local** (OAuth2 password grant) and **cloud** (ASP.NET anti-forgery token)
 
 To run locally `npm run dev`. Ensure that you are using the `.env.development` env file with `VITE_AUTH_MODE=local` and valid iMIS credentials.
 
@@ -50,27 +55,51 @@ fnm default 20
 ```
 src/
   api/
-    client.ts              # Axios instance with auth interceptor
+    Client.ts                        # Axios instance with auth interceptor
   auth/
     imis/
-      IAuthorization.ts      # Auth service interface
-      AuthorizationService.ts # Factory — returns service based on environment
-      LocalAuthorization.ts  # Dev: username/password → bearer token
-      CloudAuthorization.ts  # Prod: reads token from hidden HTML element
+      IAuthorization.ts              # Auth strategy interface
+      AuthorizationService.ts        # Factory — picks Local or Cloud strategy
+      LocalAuthorization.ts          # OAuth2 password-grant (local dev)
+      CloudAuthorization.ts          # ASP.NET request-verification token (cloud)
+    airflow/
+      IAuthorization.ts              # Airflow credentials interface
+      IJWT.ts                        # Airflow JWT response shape
+      AuthorizationService.ts        # Fetches Airflow JWT
   components/
-    common/                # Reusable UI components
-    graph/                 # React Flow graph components
-    layout/                # Header, sidebar, app layout
-    Example.tsx            # Example component demonstrating API usage
-  hooks/                   # Custom React hooks
-  models/                  # Domain models (mirror backend entities)
-  types/                   # Utility types, API wrappers, UI types
-  pages/                   # Top-level route components
-  utils/                   # Formatters, constants
+    SendSMSForm.tsx                  # Root form component
+    QueryBuilderComponent.tsx        # Field definitions + custom value editors
+    SearchableSelectorComponent.tsx  # Static multi-select (react-select)
+    AsyncMultiSearchSelect.tsx       # Async multi-select with minChars guard
+    Example.tsx                      # Example component demonstrating API usage
+  models/
+    Token.ts                         # iMIS OAuth2 token response model
   App.tsx
   main.tsx
-  vite-env.d.ts            # TypeScript declarations for Vite env variables
 ```
+
+## Query Builder
+
+The query builder lets staff filter recipients before sending. Each field maps to a property on the iMIS member record.
+
+| Field | Editor |
+|---|---|
+| Member Type | Static multi-select |
+| License Type | Static multi-select |
+| Local Association | Pre-fetched multi-select (loads on mount) |
+| Office | Async multi-select — requires ≥ 4 characters. Detects `MajorKey` pattern (letter + 3 digits) and routes to the correct query param automatically |
+| All other fields | Text / number / date / email input |
+
+### Adding a new static multi-select field
+
+1. Add the field to the `fields` array in `QueryBuilderComponent.tsx` with a `values` array.
+2. Add the field `name` to the `multiSelectFields` set in the same file.
+
+### Adding a new async field
+
+1. Write a `loadXxx` function that calls `api.get('/Query', ...)` and maps the response to `{ value, label }[]`.
+2. Create a small wrapper component (see `OfficeSelect` as a reference).
+3. Add a branch for the field name in `CustomValueEditor`.
 
 ## Environment Configuration
 
@@ -237,12 +266,15 @@ npm run test:run   # single run
 
 ## Key Dependencies
 
-- **React** — UI framework
+- **React 19** — UI framework
 - **TypeScript** — Type safety
 - **Vite** — Build tool and dev server
 - **Axios** — HTTP client
-- **Vitest** — Test runner
-- **@xyflow/react** — Node-and-edge graph visualization (React Flow)
+- **react-querybuilder** — Configurable query builder UI
+- **react-select** — Searchable, multi-select dropdowns
+- **react-hook-form** — Form state management and validation
+- **sms-segments-calculator** — SMS encoding detection and character counting
+- **emoji-picker-react** — Emoji picker with cursor-position insertion
 
 ## `.gitignore` Notes
 

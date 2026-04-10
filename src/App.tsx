@@ -1,8 +1,7 @@
-import QueryBuilderComponent from './components/QueryBuilderComponent';
-//import SendSMSForm from './components/SendSMSForm';
+import SendSMSForm from './components/SendSMSForm';
 
 function App() {
-  return <QueryBuilderComponent />
+  return <SendSMSForm />
 }
 
 export default App
