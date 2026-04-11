@@ -51,6 +51,12 @@ api.interceptors.request.use(async (config) => {
     else {
         config.headers.set("RequestVerificationToken", token);
     }
+
+    // Log the full request URL
+    const fullUrl = (config.baseURL ?? '') + (config.url ?? '') + (config.params ? '?' + new URLSearchParams(config.params).toString() : '');
+    console.log('Axios request URL:', fullUrl);
+    console.log('Params:', config.params);
+
     return config;
 });
 

@@ -81,6 +81,34 @@ async function loadOffices(inputValue: string) {
 }
 
 /**
+ * Fetches committee name options from the iMIS Query API for a given search string.
+ *
+ * Searches both the committee code and title by passing the input value to both
+ * `Code` and `Title` query parameters.
+ *
+ * @param inputValue - The search string entered by the user.
+ * @returns A promise resolving to the matching committee name options.
+ */
+async function loadCommitteeNames(inputValue: string) {
+    const res = await api.get('/Query', { params: { QueryName: import.meta.env.VITE_IMIS_COMMITTEE_NAME_LOOKUP_QUERY, Code: inputValue, Title: inputValue, Limit: 20 } });
+    return res.data.Items.$values.map((item: { value: string; label: string }) => ({ value: item.value, label: item.label }));
+}
+
+/**
+ * Fetches committee position options from the iMIS Query API for a given search string.
+ *
+ * Searches both the position code and title by passing the input value to both
+ * `PositionCode` and `Title` query parameters.
+ *
+ * @param inputValue - The search string entered by the user.
+ * @returns A promise resolving to the matching committee position options.
+ */
+async function loadCommitteePositions(inputValue: string) {
+    const res = await api.get('/Query', { params: { QueryName: import.meta.env.VITE_IMIS_COMMITTEE_POSITION_LOOKUP_QUERY, PositionCode: inputValue, Title: inputValue, Limit: 20 } });
+    return res.data.Items.$values.map((item: { value: string; label: string }) => ({ value: item.value, label: item.label }));
+}
+
+/**
  * Value editor for the `OfficeImisID` field.
  *
  * Renders an async multi-select that only queries the API after the user has
@@ -91,6 +119,32 @@ async function loadOffices(inputValue: string) {
  */
 function OfficeSelect(props: ValueEditorProps) {
     return <AsyncMultiSearchSelect {...props} loadOptions={loadOffices} minChars={4} />;
+}
+
+/**
+ * Value editor for the `CommitteeName` field.
+ *
+ * Renders an async multi-select that queries the API after the user has
+ * typed at least 1 character.
+ *
+ * @param props - Standard react-querybuilder value editor props.
+ * @returns An {@link AsyncMultiSearchSelect} wired to {@link loadCommitteeNames}.
+ */
+function CommitteeNameSelect(props: ValueEditorProps) {
+    return <AsyncMultiSearchSelect {...props} loadOptions={loadCommitteeNames} minChars={1} />;
+}
+
+/**
+ * Value editor for the `CommitteePosition` field.
+ *
+ * Renders an async multi-select that queries the API after the user has
+ * typed at least 1 character.
+ *
+ * @param props - Standard react-querybuilder value editor props.
+ * @returns An {@link AsyncMultiSearchSelect} wired to {@link loadCommitteePositions}.
+ */
+function CommitteePositionSelect(props: ValueEditorProps) {
+    return <AsyncMultiSearchSelect {...props} loadOptions={loadCommitteePositions} minChars={1} />;
 }
 
 /**
@@ -115,6 +169,12 @@ function CustomValueEditor(props: ValueEditorProps) {
     }
     if (props.field === 'OfficeImisID') {
         return <OfficeSelect {...props} />;
+    }
+    if (props.field === 'CommitteeName') {
+        return <CommitteeNameSelect {...props} />;
+    }
+    if (props.field === 'CommitteePosition') {
+        return <CommitteePositionSelect {...props} />;
     }
     if (multiSelectFields.has(props.field)) {
         return <MultiSearchSelect {...props} />;
@@ -143,13 +203,16 @@ const licenseTypeOptions: SelectOption[] = [
 ];
 
 /**
- * Full list of queryable member fields available in the query builder.
+ * Base queryable member fields available in the query builder.
  *
  * Each entry maps to a column/property on the iMIS member record. Fields with
  * a `values` array use a select-style editor; fields with a custom `valueEditor`
  * set via {@link CustomValueEditor} use async or pre-fetched options.
+ *
+ * Multi-select fields (LocalAssnImisId, OfficeImisID, MemberTypeCode, LicType)
+ * are restricted to only "in" and "not in" operators.
  */
-const fields: Field[] = [
+const baseFields: Field[] = [
     { name: 'FirstName', label: 'First Name', inputType: 'text' },
     { name: 'Email', label: 'Email', inputType: 'email' },
     { name: 'Gender', label: 'Gender' },
@@ -157,12 +220,12 @@ const fields: Field[] = [
     { name: 'LastName', label: 'Last Name', inputType: 'text' },
     { name: 'LicExpirationdate', label: 'License Expiration Date', inputType: 'date' },
     { name: 'LicNumber', label: 'License Number', inputType: 'number' },
-    { name: 'LicType', label: 'License Type', values: licenseTypeOptions },
-    { name: 'LocalAssnImisId', label: 'Local Association' },
+    { name: 'LicType', label: 'License Type', values: licenseTypeOptions, operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+    { name: 'LocalAssnImisId', label: 'Local Association', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
     { name: 'MajorKey', label: 'Member ID' },
-    { name: 'OfficeImisID', label: 'Office' },
+    { name: 'OfficeImisID', label: 'Office', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
     { name: 'MemberSubclass', label: 'Member Subclass' },
-    { name: 'MemberTypeCode', label: 'Member Type', values: memberTypeOptions },
+    { name: 'MemberTypeCode', label: 'Member Type', values: memberTypeOptions, operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
     { name: 'PrimaryReLicenseState', label: 'Primary License State' },
     { name: 'StateAssembly', label: 'State Assembly District' },
     { name: 'StateSenate', label: 'State Senate District' },
@@ -173,4 +236,25 @@ const fields: Field[] = [
     { name: 'PreferredPronoun', label: 'Preferred Pronoun' },
 ];
 
-export { fields, CustomValueEditor };
+/**
+ * Additional fields specific to Committee group type.
+ */
+const committeeFields: Field[] = [
+    { name: 'CommitteeName', label: 'Committee Name', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+    { name: 'CommitteePosition', label: 'Committee Position', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+];
+
+/**
+ * Returns the appropriate field list based on the selected group type.
+ *
+ * @param groupType - The selected group type ("Member", "Committee", or "Dynamic")
+ * @returns Field array with committee-specific fields appended if groupType is "Committee"
+ */
+function getFieldsForGroupType(groupType: string): Field[] {
+    if (groupType === 'Committee') {
+        return [...baseFields, ...committeeFields];
+    }
+    return baseFields;
+}
+
+export { getFieldsForGroupType, CustomValueEditor };

@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm, useWatch, type Control, type Resolver, } from 'react-hook-form';
 import { SegmentedMessage } from 'sms-segments-calculator';
 import { QueryBuilder, type RuleGroupType } from 'react-querybuilder';
-import { fields, CustomValueEditor } from './QueryBuilderComponent';
+import { getFieldsForGroupType, CustomValueEditor } from './QueryBuilderComponent';
 import api from '../api/Client';
 
 type SelectOption = { value: string; label: string };
@@ -209,10 +209,13 @@ export default function SendSMSForm() {
                             control={control}
                             render={({ field }) => (
                                 <QueryBuilder
-                                    fields={fields}
+                                    fields={getFieldsForGroupType(groupClassId)}
                                     controlElements={{ valueEditor: CustomValueEditor }}
                                     query={field.value ?? { combinator: 'and', rules: [] }}
-                                    onQueryChange={field.onChange}
+                                    onQueryChange={(query) => {
+                                        console.log('Query changed:', JSON.stringify(query, null, 2));
+                                        field.onChange(query);
+                                    }}
                                 />
                             )}
                         />
