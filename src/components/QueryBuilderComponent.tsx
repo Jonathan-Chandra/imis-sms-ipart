@@ -213,27 +213,17 @@ const licenseTypeOptions: SelectOption[] = [
  * are restricted to only "in" and "not in" operators.
  */
 const baseFields: Field[] = [
-    { name: 'FirstName', label: 'First Name', inputType: 'text' },
-    { name: 'Email', label: 'Email', inputType: 'email' },
-    { name: 'Gender', label: 'Gender' },
-    { name: 'Nickname', label: 'Nickname', inputType: 'text' },
-    { name: 'LastName', label: 'Last Name', inputType: 'text' },
-    { name: 'LicExpirationdate', label: 'License Expiration Date', inputType: 'date' },
+    { name: 'LicExpirationdate', label: 'License Expiration Date', inputType: 'date', operators: [{ name: '<=', label: '<=' }, { name: '>=', label: '>=' }, { name: 'between', label: 'between' }] },
     { name: 'LicNumber', label: 'License Number', inputType: 'number' },
     { name: 'LicType', label: 'License Type', values: licenseTypeOptions, operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
     { name: 'LocalAssnImisId', label: 'Local Association', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
     { name: 'MajorKey', label: 'Member ID' },
     { name: 'OfficeImisID', label: 'Office', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
-    { name: 'MemberSubclass', label: 'Member Subclass' },
     { name: 'MemberTypeCode', label: 'Member Type', values: memberTypeOptions, operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
     { name: 'PrimaryReLicenseState', label: 'Primary License State' },
-    { name: 'StateAssembly', label: 'State Assembly District' },
-    { name: 'StateSenate', label: 'State Senate District' },
-    { name: 'MiddleName', label: 'Middle Name' },
-    { name: 'MobilePhone', label: 'Mobile Phone' },
-    { name: 'OccupationName', label: 'Occupation' },
-    { name: 'SecondaryOutOfState', label: 'Secondary Out of State' },
-    { name: 'PreferredPronoun', label: 'Preferred Pronoun' },
+    { name: 'StateAssembly', label: 'State Assembly District', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+    { name: 'StateSenate', label: 'State Senate District', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+    { name: 'SecondaryOutOfState', label: 'Secondary Out of State', valueEditorType: 'select', values: [{ name: 'true', label: 'True' }, { name: 'false', label: 'False' }], operators: [{ name: '=', label: '=' }] },
 ];
 
 /**

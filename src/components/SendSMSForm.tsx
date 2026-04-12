@@ -17,7 +17,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm, useWatch, type Control, type Resolver, } from 'react-hook-form';
 import { SegmentedMessage } from 'sms-segments-calculator';
-import { QueryBuilder, type RuleGroupType } from 'react-querybuilder';
+import { QueryBuilder, formatQuery, type RuleGroupType } from 'react-querybuilder';
 import { getFieldsForGroupType, CustomValueEditor } from './QueryBuilderComponent';
 import api from '../api/Client';
 
@@ -106,18 +106,29 @@ function MessageSegmentCounter({ control }: { control: Control<FormValues> }) {
 /**
  * Custom react-hook-form resolver that validates the form submission.
  *
- * Currently enforces that `GroupClassId` must be selected before the form
- * can be submitted.
+ * Rules:
+ * - `GroupClassId` must be selected
+ * - `GroupId` must be selected when `GroupClassId` is `"Dynamic"`
+ * - `Message` must not be empty
  */
 const resolver: Resolver<FormValues> = async (values) => {
+    const errors: Record<string, { type: string; message: string }> = {};
+
+    if (!values.GroupClassId) {
+        errors.GroupClassId = { type: 'required', message: 'Group type is required.' };
+    }
+
+    if (values.GroupClassId === 'Dynamic' && !values.GroupId) {
+        errors.GroupId = { type: 'required', message: 'A dynamic group must be selected.' };
+    }
+
+    if (!values.Message?.trim()) {
+        errors.Message = { type: 'required', message: 'Message is required.' };
+    }
+
     return {
-        values: values.GroupClassId ? values : {},
-        errors: !values.GroupClassId ? {
-            GroupClassId: {
-                type: 'required',
-                message: 'You must select a group type before proceeding.',
-            } 
-        } : {},
+        values: Object.keys(errors).length === 0 ? values : {},
+        errors,
     };
 }
 /**
@@ -136,8 +147,17 @@ const resolver: Resolver<FormValues> = async (values) => {
  * @returns The rendered SMS composition form.
  */
 export default function SendSMSForm() {
-    const { register, control, handleSubmit, setValue } = useForm<FormValues>({ resolver, defaultValues: {Message: ''} });
-    const onSubmit = handleSubmit((data) => console.log('Form submitted:', data));
+    const { register, control, handleSubmit, setValue, getValues, formState: { errors } } = useForm<FormValues>({ resolver, defaultValues: { Message: '' } });
+
+    useEffect(() => {
+const id = new URLSearchParams(window.location.search).get('Id') ?? '';
+        console.log('Resolved ID:', id);
+        setValue('Id', id);
+    }, []);
+    const onSubmit = handleSubmit((data) => {
+        const payload = { ...data, Query: data.Query ? formatQuery(data.Query, 'json_without_ids') : null };
+        console.log('Form submitted:', payload);
+    });
     const [pickerOpen, setPickerOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [groupClassId, setGroupClassId] = useState('');
@@ -150,6 +170,7 @@ export default function SendSMSForm() {
 
     return (
         <form onSubmit={onSubmit}>
+            <input type="hidden" {...register('Id')} />
             <div className="node">
                 <h5>Send SMS To</h5>
             </div>
@@ -176,6 +197,7 @@ export default function SendSMSForm() {
                             <option value="Committee">Committee</option>
                             <option value="Dynamic">Dynamic</option>
                         </select>
+                        {errors.GroupClassId && <span style={{ color: 'red' }}>{errors.GroupClassId.message}</span>}
                     </div>
                 </div>
             </div>
@@ -197,6 +219,7 @@ export default function SendSMSForm() {
                                     <option key={g.value} value={g.value}>{g.label}</option>
                                 ))}
                             </select>
+                            {errors.GroupId && <span style={{ color: 'red' }}>{errors.GroupId.message}</span>}
                         </div>
                     </div>
                 </div>
@@ -212,10 +235,7 @@ export default function SendSMSForm() {
                                     fields={getFieldsForGroupType(groupClassId)}
                                     controlElements={{ valueEditor: CustomValueEditor }}
                                     query={field.value ?? { combinator: 'and', rules: [] }}
-                                    onQueryChange={(query) => {
-                                        console.log('Query changed:', JSON.stringify(query, null, 2));
-                                        field.onChange(query);
-                                    }}
+                                    onQueryChange={field.onChange}
                                 />
                             )}
                         />
@@ -235,7 +255,7 @@ export default function SendSMSForm() {
                                     <textarea
                                         maxLength={maxMessageLength}
                                         value={field.value ?? ''}
-                                        onChange={field.onChange}
+                                        onChange={(e) => { field.onChange(e); console.log('Form values:', getValues()); }}
                                         onBlur={field.onBlur}
                                         name={field.name}
                                         ref={(el) => {
@@ -244,6 +264,7 @@ export default function SendSMSForm() {
                                         }}
                                     />
                                     <MessageSegmentCounter control={control} />
+                                    {errors.Message && <span style={{ color: 'red' }}>{errors.Message.message}</span>}
                                     <button
                                         className="Button TextButton"
                                         type="button"
