@@ -242,6 +242,14 @@ const id = new URLSearchParams(window.location.search).get('Id') ?? '';
                     </div>
                 </div>
             )}
+            {groupClassId === 'Member' && (
+                <div className="node">
+                    <div className="AsiWarning">
+                        <strong>Performance Warning:</strong> Querying by Member is resource-intensive and may significantly impact delivery times.
+                        SMS messages sent to member groups can take over an hour to be fully queried and dispatched. Where possible, consider using a more targeted group type.
+                    </div>
+                </div>
+            )}
             <div className="node">
                 <div className="PanelField Left">
                     <label>Message:</label>
