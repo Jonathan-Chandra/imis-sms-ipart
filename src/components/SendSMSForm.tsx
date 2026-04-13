@@ -17,7 +17,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm, useWatch, type Control, type Resolver, } from 'react-hook-form';
 import { SegmentedMessage } from 'sms-segments-calculator';
-import { QueryBuilder, formatQuery, type RuleGroupType } from 'react-querybuilder';
+import { QueryBuilder, type RuleGroupType } from 'react-querybuilder';
 import { getFieldsForGroupType, CustomValueEditor } from './QueryBuilderComponent';
 import api from '../api/Client';
 
@@ -154,10 +154,10 @@ const id = new URLSearchParams(window.location.search).get('Id') ?? '';
         console.log('Resolved ID:', id);
         setValue('Id', id);
     }, []);
-    const onSubmit = handleSubmit((data) => {
-        const payload = { ...data, Query: data.Query ? formatQuery(data.Query, 'json_without_ids') : null };
-        console.log('Form submitted:', payload);
-    });
+    const submitForm = async (_data: FormValues) => {
+        // add submit logic here
+    };
+    const onSubmit = handleSubmit(submitForm);
     const [pickerOpen, setPickerOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [groupClassId, setGroupClassId] = useState('');
