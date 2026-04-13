@@ -230,8 +230,8 @@ const baseFields: Field[] = [
  * Additional fields specific to Committee group type.
  */
 const committeeFields: Field[] = [
-    { name: 'CommitteeName', label: 'Committee Name', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
-    { name: 'CommitteePosition', label: 'Committee Position', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+    { name: 'CommitteeCode', label: 'Committee Name', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
+    { name: 'PositionCode', label: 'Committee Position', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
 ];
 
 /**
