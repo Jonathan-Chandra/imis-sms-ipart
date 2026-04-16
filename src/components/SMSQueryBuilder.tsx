@@ -10,7 +10,7 @@ type Props = {
 function SetAsyncQueryBuilderMultiSelect(props: ValueEditorProps) {
     const loader = LoadOptionsMap[props.field];
     if(props.fieldData.valueEditorType === 'multiselect' && loader) {
-        return (<AsyncQueryBuilderMultiSelect loadOptions={loader} onChange={props.handleOnChange} />);
+        return (<AsyncQueryBuilderMultiSelect key={props.field} loadOptions={loader} onChange={props.handleOnChange} />);
     }
         return <ValueEditor {...props} />;
 }

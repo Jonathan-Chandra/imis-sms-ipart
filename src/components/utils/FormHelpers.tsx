@@ -295,5 +295,6 @@ export const LoadOptionsMap: Record<string, (inputValue: string) => Promise<{ la
     'COMMITTEE_POSITION': LoadCommitteePositionOptions,
     'GENDER': async () => Gender.map(g => ({ label: g.label, value: g.name })),
     'MEMBER_TYPE_CODE': async () => MemberTypes.map(m => ({ label: m.label, value: m.name })),
+    'SECONDARY_OUT_OF_STATE': async () => [{ label: 'True', value: 'true' }, { label: 'False', value: 'false' }],
     'LICENSE_STATE': LoadStateOptions
 }
