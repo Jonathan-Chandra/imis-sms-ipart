@@ -44,7 +44,7 @@ type Props = {
 export default function GroupType({ onChange }: Props) {
     const [dynamicGroupTypeOptions, setDynamicGroupTypeOptions] = useState<{ name: string; label: string }[]>([]);
     const [showDynamicGroups, setShowDynamicGroups] = useState<boolean>(false);
-    const [memberWarningMessage, setMemberWarningMessage] = useState<string>(MemberSelectionWarningMessage);
+    const [memberWarningMessage, setMemberWarningMessage] = useState<string>('');
     const [group, setGroup] = useState<GroupTypeValues>({ groupType: 'member', groupName: null });
     useEffect(() => {
         const fetchOptions = async () => {
