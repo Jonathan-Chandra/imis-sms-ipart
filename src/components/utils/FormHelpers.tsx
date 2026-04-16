@@ -106,7 +106,6 @@ export const SMSQueryBuilderFields: Field[] = [
     { name: 'MEMBER_TYPE_CODE', label: 'Member Type', valueEditorType: 'multiselect' },
     { name: 'SECONDARY_OUT_OF_STATE', label: 'Secondary Out of State', valueEditorType: 'multiselect' },
     { name: 'LICENSE_STATE', label: 'License State', valueEditorType: 'multiselect' },
-    { name: 'PRIMARY_STATE_ASSOCIATION_ID', label: 'Primary State Association' },
     { name: 'JOIN_DATE', label: 'Join Date' },
 
 ];
