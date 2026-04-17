@@ -41,7 +41,7 @@ type Props = {
  * @param props - Component props.
  * @returns The rendered group type selection UI.
  */
-export default function GroupType({ onChange }: Props) {
+export default function GroupTypeInput({ onChange }: Props) {
     const [dynamicGroupTypeOptions, setDynamicGroupTypeOptions] = useState<{ name: string; label: string }[]>([]);
     const [showDynamicGroups, setShowDynamicGroups] = useState<boolean>(false);
     const [memberWarningMessage, setMemberWarningMessage] = useState<string>('');
@@ -100,16 +100,16 @@ export default function GroupType({ onChange }: Props) {
 
     return (
         <div>
-            {
+            { (memberWarningMessage !== '') &&
                 <div className='node'>
                     <div className="AsiWarning">{memberWarningMessage}</div>
                 </div>
             }
             <div className='node'>
                 <div className='PanelField Left'>
-                    <label htmlFor='message'>Group Type</label>
+                    <label htmlFor='groupType'>Group Type</label>
                     <div className='PanelFieldValue'>
-                        <select data-required='true' aria-required='true' onChange={e => handleGroupTypeChange(e.target.value)}>
+                        <select id='groupType' data-required='true' aria-required='true' onChange={e => handleGroupTypeChange(e.target.value)}>
                             <option value=''>Select a Group Type</option>
                             {
                                 GroupTypes.map((group) => (
@@ -123,9 +123,9 @@ export default function GroupType({ onChange }: Props) {
             {showDynamicGroups &&
                 <div className='node'>
                     <div className='PanelField Left'>
-                        <label htmlFor='message'>Select a Group</label>
+                        <label htmlFor='groupName'>Select a Group</label>
                         <div className='PanelFieldValue'>
-                            <select data-required='true' aria-required='true' onChange={e => handleGroupNameChange(e.target.value)}>
+                            <select id='groupName' data-required='true' aria-required='true' onChange={e => handleGroupNameChange(e.target.value)}>
                                 <option value=''>Select a group</option>
                                 {
                                     dynamicGroupTypeOptions.map((group) => (

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import AsyncSelect from 'react-select/async';
 
 type Props = {
@@ -17,8 +16,10 @@ export default function AsyncQueryBuilderMultiSelect({ loadOptions, onChange }: 
             onChange={(selected) => onChange(selected.map(s => s.value))}
             className='rule-value' classNamePrefix='rule-value'
             styles={{
+                container: (base) => ({ ...base, width: '100%' }),
                 control: (base) => ({
                     ...base,
+                    width: '100%',
                     minHeight: 'unset',
                     height: 'auto',
                     borderRadius: '4px',
@@ -26,7 +27,7 @@ export default function AsyncQueryBuilderMultiSelect({ loadOptions, onChange }: 
                     fontSize: 'inherit',
                     fontFamily: 'inherit',
                 }),
-                menu: (base) => ({ ...base, fontSize: 'inherit', fontFamily: 'inherit' }),
+                menu: (base) => ({ ...base, width: '100%', fontSize: 'inherit', fontFamily: 'inherit' }),
                 multiValue: (base) => ({ ...base, fontSize: 'inherit' }),
             }}
             defaultOptions={true}

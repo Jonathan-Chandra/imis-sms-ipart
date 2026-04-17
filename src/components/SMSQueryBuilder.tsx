@@ -1,10 +1,11 @@
-import { QueryBuilder, ValueEditor, type ValueEditorProps } from 'react-querybuilder';
+import { QueryBuilder, ValueEditor, type Field, type ValueEditorProps } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
-import { LoadOptionsMap, SMSQueryBuilderFields } from './utils/FormHelpers';
+import { LoadOptionsMap } from './utils/FormHelpers';
 import AsyncQueryBuilderMultiSelect from './AsyncQueryBuilderMultiSelect';
 
 type Props = {
     onChange: (value: any) => void;
+    fields: Field[]
 };
 
 function SetAsyncQueryBuilderMultiSelect(props: ValueEditorProps) {
@@ -16,10 +17,10 @@ function SetAsyncQueryBuilderMultiSelect(props: ValueEditorProps) {
 }
 
 
-export default function SMSQueryBuilder({ onChange }: Props) {
+export default function SMSQueryBuilder({ onChange, fields }: Props) {
     return (
         <div>
-            <QueryBuilder fields = {SMSQueryBuilderFields} controlElements={{ valueEditor: SetAsyncQueryBuilderMultiSelect }}/>
+            <QueryBuilder fields = {fields} controlElements={{ valueEditor: SetAsyncQueryBuilderMultiSelect }} translations={{ addGroup: { label: '+ Filter' } }} onQueryChange={(value: any) => onChange(value)} />
         </div>
     );
 }

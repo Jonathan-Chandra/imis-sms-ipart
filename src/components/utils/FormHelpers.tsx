@@ -97,15 +97,15 @@ export const Gender = [
 export const SMSQueryBuilderFields: Field[] = [
     { name: 'FIRST_NAME', label: 'First Name' },
     { name: 'LAST_NAME', label: 'Last Name' },
-    { name: 'GENDER', label: 'Gender', valueEditorType: 'multiselect' },
+    { name: 'GENDER', label: 'Gender', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
     { name: 'INFORMAL', label: 'Nickname' },
-    { name: 'MAJOR_KEY', label: 'NRDS ID', valueEditorType: 'multiselect' },
+    { name: 'MAJOR_KEY', label: 'NRDS ID', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
     { name: 'LICENSE_NUMBER', label: 'License Number' },
     { name: 'PRIMARY_OFFICE', label: 'Office', valueEditorType: 'multiselect' },
-    { name: 'LOCAL_ASSOCIATION', label: 'Local Association', valueEditorType: 'multiselect' },
-    { name: 'MEMBER_TYPE_CODE', label: 'Member Type', valueEditorType: 'multiselect' },
-    { name: 'SECONDARY_OUT_OF_STATE', label: 'Secondary Out of State', valueEditorType: 'multiselect' },
-    { name: 'LICENSE_STATE', label: 'License State', valueEditorType: 'multiselect' },
+    { name: 'LOCAL_ASSOCIATION', label: 'Local Association', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
+    { name: 'MEMBER_TYPE_CODE', label: 'Member Type', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
+    { name: 'SECONDARY_OUT_OF_STATE', label: 'Secondary Out of State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
+    { name: 'LICENSE_STATE', label: 'License State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
     { name: 'JOIN_DATE', label: 'Join Date' },
 
 ];
@@ -116,9 +116,9 @@ export const SMSQueryBuilderFields: Field[] = [
  * Extends {@link SMSQueryBuilderFields} with committee-specific fields for
  * filtering by committee name and position.
  */
-export const SMSQueryBuilderCommitteeFileds: Field[] = [...SMSQueryBuilderFields,
-{ name: 'COMMITTEE_NAME', label: 'Committee Name', valueEditorType: 'multiselect' },
-{ name: 'COMMITTEE_POSITION', label: 'Committee Position', valueEditorType: 'multiselect' },
+export const SMSQueryBuilderCommitteeFields: Field[] = [...SMSQueryBuilderFields,
+{ name: 'COMMITTEE_NAME', label: 'Committee Name', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
+{ name: 'COMMITTEE_POSITION', label: 'Committee Position', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
 ]
 
 /** Static list of available SMS recipient group types. */
@@ -132,7 +132,7 @@ export const GroupTypes = [
         value: 'committee'
     },
     {
-        label: 'Dynamic',
+        label: 'iMIS Group',
         value: 'dynamic'
     }
 ]
