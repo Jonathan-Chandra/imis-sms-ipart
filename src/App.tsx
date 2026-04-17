@@ -1,7 +1,7 @@
-import SendSMSForm from './components/SendSMSForm';
+import SMS from './components/SMS';
 
 function App() {
-  return <SendSMSForm />
+  return <SMS  />
 }
 
 export default App

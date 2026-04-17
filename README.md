@@ -6,8 +6,8 @@ A Vite + React iPart for the iMIS platform that allows staff to compose and send
 
 ## Features
 
-- Select a recipient group type: **Member**, **Committee**, or **Dynamic**
-- Refine recipients with a flexible **query builder** supporting multi-select, async search, and date/text filters across member fields
+- Select a recipient group type: **Member**, **Committee**, or **iMIS Group** (dynamic)
+- Refine recipients with a flexible **query builder** supporting async multi-select search, text, and date filters across member fields
 - Compose messages with an **emoji picker** and a live character counter that adapts to GSM-7 (160 chars) or UCS-2 (70 chars) encoding
 - Two authentication modes: **local** (OAuth2 password grant) and **cloud** (ASP.NET anti-forgery token)
 
@@ -55,55 +55,73 @@ fnm default 20
 ```
 src/
   api/
-    Client.ts                        # Axios instance with auth interceptor
+    Client.ts                              # Axios instance with auth interceptor
   auth/
     imis/
-      IAuthorization.ts              # Auth strategy interface
-      AuthorizationService.ts        # Factory — picks Local or Cloud strategy
-      LocalAuthorization.ts          # OAuth2 password-grant (local dev)
-      CloudAuthorization.ts          # ASP.NET request-verification token (cloud)
+      IAuthorization.ts                    # Auth strategy interface
+      AuthorizationService.ts              # Factory — picks Local or Cloud strategy
+      LocalAuthorization.ts                # OAuth2 password-grant (local dev)
+      CloudAuthorization.ts                # ASP.NET request-verification token (cloud)
     airflow/
-      IAuthorization.ts              # Airflow credentials interface
-      IJWT.ts                        # Airflow JWT response shape
-      AuthorizationService.ts        # Fetches Airflow JWT
+      IAuthorization.ts                    # Airflow credentials interface
+      IJWT.ts                              # Airflow JWT response shape
+      AuthorizationService.ts              # Fetches Airflow JWT
   components/
-    SendSMSForm.tsx                  # Root form component
-    QueryBuilderComponent.tsx        # Field definitions + custom value editors
-    SearchableSelectorComponent.tsx  # Static multi-select (react-select)
-    AsyncMultiSearchSelect.tsx       # Async multi-select with minChars guard
-    Example.tsx                      # Example component demonstrating API usage
+    SMS.tsx                                # Root form component — manages group type, query builder, and message state
+    GroupTypeInput.tsx                     # Group type selector — fetches iMIS dynamic groups on mount
+    SMSQueryBuilder.tsx                    # react-querybuilder wrapper with custom async multi-select value editor
+    SMSMessageInput.tsx                    # SMS message textarea with emoji picker and live character counter
+    AsyncQueryBuilderMultiSelect.tsx       # Reusable async multi-select (react-select) for use inside the query builder
+    Example.tsx                            # Example component demonstrating API usage
+    utils/
+      FormHelpers.tsx                      # Shared constants, field definitions, async loader functions, and LoadOptionsMap
   models/
-    Token.ts                         # iMIS OAuth2 token response model
+    Token.ts                               # iMIS OAuth2 token response model
   App.tsx
   main.tsx
 ```
 
 ## Query Builder
 
-The query builder lets staff filter recipients before sending. Each field maps to a property on the iMIS member record.
+The query builder (`SMSQueryBuilder.tsx`) lets staff filter recipients before sending. It uses `react-querybuilder` with a custom `valueEditor` that routes `multiselect` fields through an async `react-select` dropdown (`AsyncQueryBuilderMultiSelect.tsx`).
 
-| Field | Editor |
-|---|---|
-| Member Type | Static multi-select |
-| License Type | Static multi-select |
-| Local Association | Pre-fetched multi-select (loads on mount) |
-| Office | Async multi-select — requires ≥ 4 characters. Detects `MajorKey` pattern (letter + 3 digits) and routes to the correct query param automatically |
-| All other fields | Text / number / date / email input |
+Field definitions live in `FormHelpers.tsx` in two lists:
+- `SMSQueryBuilderFields` — used for the **Member** and **iMIS Group** group types
+- `SMSQueryBuilderCommitteeFields` — extends the above with committee-specific fields, used when **Committee** is selected
 
-### Adding a new static multi-select field
+| Field | Type | Source |
+|---|---|---|
+| First Name | Text | — |
+| Last Name | Text | — |
+| Gender | Async multi-select | Static list |
+| Nickname | Text | — |
+| NRDS ID | Async multi-select | iMIS member lookup query |
+| License Number | Text | — |
+| Office | Async multi-select | iMIS office lookup query (search by name or `MajorKey`) |
+| Local Association | Async multi-select | iMIS association lookup query |
+| Member Type | Async multi-select | Static list |
+| Secondary Out of State | Async multi-select | Static list (True/False) |
+| License State | Async multi-select | iMIS state lookup query |
+| Join Date | Date | — |
+| Committee Name *(committee only)* | Async multi-select | iMIS committee lookup query |
+| Committee Position *(committee only)* | Async multi-select | iMIS committee position lookup query |
 
-1. Add the field to the `fields` array in `QueryBuilderComponent.tsx` with a `values` array.
-2. Add the field `name` to the `multiSelectFields` set in the same file.
+### Adding a new async multi-select field
 
-### Adding a new async field
+1. Write a `loadXxx` async function in `FormHelpers.tsx` that calls `api.get('/Query', ...)` and maps the response to `{ label, value }[]`.
+2. Add the field to `SMSQueryBuilderFields` (or `SMSQueryBuilderCommitteeFields`) with `valueEditorType: 'multiselect'`.
+3. Add an entry to `LoadOptionsMap` in `FormHelpers.tsx` keyed by the exact field `name`.
 
-1. Write a `loadXxx` function that calls `api.get('/Query', ...)` and maps the response to `{ value, label }[]`.
-2. Create a small wrapper component (see `OfficeSelect` as a reference).
-3. Add a branch for the field name in `CustomValueEditor`.
+### Adding a new text/date/static field
+
+1. Add the field to `SMSQueryBuilderFields` in `FormHelpers.tsx` — no `valueEditorType` needed for plain text or date fields.
+2. For a static list without async search, add `values: [...]` to the field definition.
 
 ## Environment Configuration
 
-The project uses Vite's environment modes to switch behavior between local development and deployed environments. Environment files go in the project root (next to `package.json`).
+The project uses Vite's environment modes to switch behavior between local development and deployed environments. Environment files go in the project root (next to `package.json`). Copy the appropriate `.env.*.example` file and fill in values.
+
+> **Important:** Always restart the dev server after modifying `.env` files. Vite only reads them at startup.
 
 ### `.env.development`
 
@@ -115,30 +133,36 @@ VITE_AUTH_URL=https://your-imis-instance.com/token
 VITE_API_URL=/api
 VITE_AUTH_USERNAME=your-username
 VITE_AUTH_PASSWORD=your-password
-VITE_PROXY_TARGET=https://your-imis-instance.com
+VITE_IMIS_BASE_URL=https://your-imis-instance.com
+
+# iMIS Query names (configured in iMIS Query Manager)
+VITE_IMIS_DYNAMIC_GROUP_LOOKUP_QUERY=YourDynamicGroupQuery
+VITE_IMIS_ASSOCIATION_LOOKUP_QUERY=YourAssociationQuery
+VITE_IMIS_COMMITTEE_LOOKUP_QUERY=YourCommitteeQuery
+VITE_IMIS_COMMITTEE_NAME_LOOKUP_QUERY=YourCommitteeNameQuery
+VITE_IMIS_COMMITTEE_POSITION_LOOKUP_QUERY=YourCommitteePositionQuery
+VITE_IMIS_OFFICE_LOOKUP_QUERY=YourOfficeQuery
+VITE_IMIS_MEMBER_LOOKUP_QUERY=YourMemberQuery
+VITE_IMIS_STATE_LOOKUP_QUERY=YourStateQuery
+
+# Airflow credentials (if applicable)
+VITE_AIRFLOW_BASE_URL=https://your-airflow-instance.com
+VITE_AIRFLOW_USERNAME=your-airflow-username
+VITE_AIRFLOW_PASSWORD=your-airflow-password
 ```
 
-### `.env.uat`
+### `.env.uat` and `.env.production`
 
-Used for UAT builds (`npm run build:uat`).
+Used for UAT and production builds. Set `VITE_AUTH_MODE` to `uat` or `production`. All `VITE_IMIS_*_QUERY` variables must match the query names configured in the target iMIS environment.
 
 ```
-VITE_AUTH_MODE=prod
+VITE_AUTH_MODE=uat
 VITE_API_URL=/api
-```
-
-### `.env.production`
-
-Used for production builds (`npm run build:prod`).
-
-```
-VITE_AUTH_MODE=prod
-VITE_API_URL=/api
+VITE_IMIS_BASE_URL=https://your-uat-imis-instance.com
+# ... same VITE_IMIS_* query names as development
 ```
 
 > **Note:** Only variables prefixed with `VITE_` are exposed to client code. Auth credentials in `.env.development` are used server-side by the Vite proxy and are never included in the browser bundle.
-
-> **Important:** Always restart the dev server after modifying `.env` files. Vite only reads them at startup.
 
 ## Authentication
 
@@ -152,7 +176,7 @@ The project supports two authentication strategies, selected at build time via `
 Authorization: Bearer <token>
 ```
 
-### Production / UAT (`VITE_AUTH_MODE=prod`)
+### Production / UAT
 
 `CloudAuthorization` reads a request verification token from a hidden HTML element injected by the iMIS server:
 
@@ -197,9 +221,8 @@ This proxy only runs during `npm run dev`. In production, the iPart is served fr
 | `npm run build:dev` | Build with development environment |
 | `npm run build:uat` | Build with UAT environment |
 | `npm run build:prod` | Build for production |
+| `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
-| `npm run test` | Run tests in watch mode |
-| `npm run test:run` | Run tests once |
 
 ### `package.json` scripts
 
@@ -207,19 +230,19 @@ This proxy only runs during `npm run dev`. In production, the iPart is served fr
 {
   "scripts": {
     "dev": "vite",
-    "build:dev": "tsc -b && vite build --mode development",
-    "build:uat": "tsc -b && vite build --mode uat",
-    "build:prod": "tsc -b && vite build --mode production",
-    "preview": "vite preview",
-    "test": "vitest",
-    "test:run": "vitest run"
+    "build": "tsc -b && vite build",
+    "build:dev": "vite build --mode development",
+    "build:uat": "vite build --mode uat",
+    "build:prod": "vite build --mode production",
+    "lint": "eslint .",
+    "preview": "vite preview"
   }
 }
 ```
 
 ## API Client
 
-The Axios client (`src/api/client.ts`) is pre-configured with:
+The Axios client (`src/api/Client.ts`) is pre-configured with:
 
 - A `baseURL` from `VITE_API_URL`
 - An interceptor that automatically attaches the correct auth header based on the environment
@@ -228,9 +251,9 @@ The Axios client (`src/api/client.ts`) is pre-configured with:
 Import and use it in any component or service:
 
 ```typescript
-import api from '../api/client';
+import api from '../api/Client';
 
-const response = await api.get('/party');
+const response = await api.get('/Query', { params: { QueryName: 'YourQueryName' } });
 ```
 
 ## Adding API Endpoints
@@ -238,23 +261,12 @@ const response = await api.get('/party');
 Group related endpoints in `src/api/`:
 
 ```typescript
-// src/api/partyApi.ts
-import api from './client';
-import { Party } from '../models/party';
+// src/api/smsApi.ts
+import api from './Client';
 
-export const partyApi = {
-  getAll: () => api.get<Party[]>('/party'),
-  getById: (id: string) => api.get<Party>(`/party/${id}`),
+export const smsApi = {
+  sendSMS: (payload: object) => api.post('/sms/send', payload),
 };
-```
-
-## Testing
-
-The project uses Vitest with jsdom for testing. Tests live alongside source files or in `__tests__` directories.
-
-```bash
-npm run test       # watch mode
-npm run test:run   # single run
 ```
 
 ## Deployment
@@ -271,10 +283,8 @@ npm run test:run   # single run
 - **Vite** — Build tool and dev server
 - **Axios** — HTTP client
 - **react-querybuilder** — Configurable query builder UI
-- **react-select** — Searchable, multi-select dropdowns
-- **react-hook-form** — Form state management and validation
-- **sms-segments-calculator** — SMS encoding detection and character counting
-- **emoji-picker-react** — Emoji picker with cursor-position insertion
+- **react-select** — Async, searchable, multi-select dropdowns (`AsyncQueryBuilderMultiSelect`)
+- **@emoji-mart/react** + **@emoji-mart/data** — Emoji picker with cursor-position insertion
 
 ## `.gitignore` Notes
 
@@ -290,7 +300,7 @@ dist/
 .env*.local
 ```
 
-Keep a `.env.example` with placeholder values checked in for reference.
+Keep the `.env.*.example` files with placeholder values checked in for reference.
 
 ## React + TypeScript + Vite
 
@@ -300,10 +310,6 @@ Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-### React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
 ### Expanding the ESLint configuration
 
@@ -325,35 +331,6 @@ export default defineConfig([
       tseslint.configs.stylisticTypeChecked,
 
       // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
     ],
     languageOptions: {
       parserOptions: {
