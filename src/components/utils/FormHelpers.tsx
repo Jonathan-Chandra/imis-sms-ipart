@@ -82,6 +82,14 @@ export const MemberStatus = [{ label: 'Active (A)', name: 'A' },
 { label: 'Terminated (T)', name: 'T' },
 { label: 'Deceased (X)', name: 'X' }]
 
+/** Static list of DRE license type options. */
+export const DreLicenseTypes = [
+    { label: 'Salesperson', name: 'Salesperson' },
+    { label: 'Broker', name: 'Broker' },
+    { label: 'Officer', name: 'Officer' },
+    { label: 'Corporation', name: 'Corporation' },
+]
+
 /** Static list of gender options. */
 export const Gender = [
     { label: 'Male (M)', name: 'M' },
@@ -95,10 +103,7 @@ export const Gender = [
  * for use in the react-querybuilder UI.
  */
 export const SMSQueryBuilderFields: Field[] = [
-    { name: 'FIRST_NAME', label: 'First Name' },
-    { name: 'LAST_NAME', label: 'Last Name' },
     { name: 'GENDER', label: 'Gender', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
-    { name: 'INFORMAL', label: 'Nickname' },
     { name: 'MAJOR_KEY', label: 'NRDS ID', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
     { name: 'LICENSE_NUMBER', label: 'License Number' },
     { name: 'PRIMARY_OFFICE', label: 'Office', valueEditorType: 'multiselect' },
@@ -107,7 +112,7 @@ export const SMSQueryBuilderFields: Field[] = [
     { name: 'SECONDARY_OUT_OF_STATE', label: 'Secondary Out of State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
     { name: 'LICENSE_STATE', label: 'License State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
     { name: 'JOIN_DATE', label: 'Join Date' },
-
+    { name: 'DRE_LICENSE_TYPE', label: 'DRE License Type', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
 ];
 
 /**
@@ -295,5 +300,6 @@ export const LoadOptionsMap: Record<string, (inputValue: string) => Promise<{ la
     'GENDER': async () => Gender.map(g => ({ label: g.label, value: g.name })),
     'MEMBER_TYPE_CODE': async () => MemberTypes.map(m => ({ label: m.label, value: m.name })),
     'SECONDARY_OUT_OF_STATE': async () => [{ label: 'True', value: 'true' }, { label: 'False', value: 'false' }],
-    'LICENSE_STATE': LoadStateOptions
+    'LICENSE_STATE': LoadStateOptions,
+    'DRE_LICENSE_TYPE': async () => DreLicenseTypes.map(d => ({ label: d.label, value: d.name })),
 }

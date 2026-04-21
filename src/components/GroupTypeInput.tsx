@@ -26,9 +26,12 @@ type GroupTypeValues = {
  * Props for the {@link GroupType} component.
  *
  * @property onChange - Callback fired whenever the group type or group name selection changes.
+ * @property initialGroupType - Optional group type value to pre-select on mount (e.g. from a URL parameter).
+ *   Must match one of the values in {@link GroupTypes}. Ignored if empty or unrecognized.
  */
 type Props = {
     onChange: (value: GroupTypeValues) => void;
+    initialGroupType?: string;
 };
 
 /**
@@ -37,15 +40,16 @@ type Props = {
  * Fetches available dynamic groups from the iMIS Query API on mount.
  * Displays a performance warning when the `"member"` group type is selected.
  * Reveals the dynamic group selector only when `"dynamic"` is selected.
+ * If `initialGroupType` is provided, the dropdown and related UI are pre-populated on mount.
  *
  * @param props - Component props.
  * @returns The rendered group type selection UI.
  */
-export default function GroupTypeInput({ onChange }: Props) {
+export default function GroupTypeInput({ onChange, initialGroupType = '' }: Props) {
     const [dynamicGroupTypeOptions, setDynamicGroupTypeOptions] = useState<{ name: string; label: string }[]>([]);
-    const [showDynamicGroups, setShowDynamicGroups] = useState<boolean>(false);
-    const [memberWarningMessage, setMemberWarningMessage] = useState<string>('');
-    const [group, setGroup] = useState<GroupTypeValues>({ groupType: 'member', groupName: null });
+    const [showDynamicGroups, setShowDynamicGroups] = useState<boolean>(initialGroupType === 'dynamic');
+    const [memberWarningMessage, setMemberWarningMessage] = useState<string>(initialGroupType === 'member' ? MemberSelectionWarningMessage : '');
+    const [group, setGroup] = useState<GroupTypeValues>({ groupType: initialGroupType, groupName: null });
     useEffect(() => {
         const fetchOptions = async () => {
             const response = await api.get('/Query', { params: { QueryName: import.meta.env.VITE_IMIS_DYNAMIC_GROUP_LOOKUP_QUERY } });
@@ -109,7 +113,7 @@ export default function GroupTypeInput({ onChange }: Props) {
                 <div className='PanelField Left'>
                     <label htmlFor='groupType'>Group Type</label>
                     <div className='PanelFieldValue'>
-                        <select id='groupType' data-required='true' aria-required='true' onChange={e => handleGroupTypeChange(e.target.value)}>
+                        <select id='groupType' data-required='true' aria-required='true' value={group.groupType} onChange={e => handleGroupTypeChange(e.target.value)}>
                             <option value=''>Select a Group Type</option>
                             {
                                 GroupTypes.map((group) => (

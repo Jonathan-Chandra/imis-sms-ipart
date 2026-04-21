@@ -65,13 +65,14 @@ export default function SMSMessageInput({ onChange }: Props) {
         if(!hasEmoji(value))
         {
             setMessageLength(SMS_MESSAGE_LENGTH - value.length);
+            setShowEmojiWarning(false);
         }
         else {
             setMessageLength(SMS_MESSAGE_LENGTH_WITH_EMOJIS - [...value].length);
             setShowEmojiWarning(true);
         }
         setMessage(value);
-        onChange(message);
+        onChange(value);
     }
     /**
      * Returns `true` if the message contains at least one emoji character.
