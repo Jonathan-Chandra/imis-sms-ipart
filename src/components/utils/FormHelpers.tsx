@@ -105,12 +105,12 @@ export const Gender = [
 export const SMSQueryBuilderFields: Field[] = [
     { name: 'GENDER', label: 'Gender', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
     { name: 'MAJOR_KEY', label: 'NRDS ID', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
-    { name: 'PRIMARY_RE_LICENSE_NUMBER', label: 'License Number' },
+    { name: 'LICENSE_NUMBER', label: 'License Number' },
     { name: 'PRIMARY_OFFICE', label: 'Office', valueEditorType: 'multiselect' },
     { name: 'LOCAL_ASSOCIATION', label: 'Local Association', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
     { name: 'MEMBER_TYPE_CODE', label: 'Member Type', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
     { name: 'SECONDARY_OUT_OF_STATE', label: 'Secondary Out of State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
-    { name: 'LICENSE_STATE', label: 'License State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
+    { name: 'PRIMARY_RE_LICENSE_STATE', label: 'License State', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
     { name: 'JOIN_DATE', label: 'Join Date' },
     { name: 'DRE_LICENSE_TYPE', label: 'DRE License Type', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in' }, { name: 'notIn', label: 'not in' }] },
 ];
