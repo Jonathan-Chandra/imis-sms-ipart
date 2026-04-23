@@ -10,8 +10,7 @@
  */
 
 import { useCallback, useRef, useState } from "react";
-import Picker from '@emoji-mart/react';
-import data from '@emoji-mart/data';
+import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 
 /**
  * Props for the {@link SMSMessageInput} component.
@@ -117,12 +116,13 @@ export default function SMSMessageInput({ onChange }: Props) {
                         <textarea id="smsMessage" ref={messageRef} value={message} onChange={e => handleMessageChange(e.target.value)} onBlur={savePosition} onKeyUp={trackPosition} onMouseUp={trackPosition} style={{ width: '100%' }}/>
                         <button type='button' onClick={() => setShowPicker(p => !p)}>😊</button>
 
-                        {showPicker && (<Picker
-                            data={data}
-                            onEmojiSelect={(emoji: any) => insertEmoji(emoji.native)}
-                            set="native"
-                            emojiVersion={14}   // only show emojis from Unicode 14 and below (widely supported)
-                        />)}
+                        {showPicker && (
+                            <EmojiPicker
+                                onEmojiClick={(emojiData) => insertEmoji(emojiData.emoji)}
+                                emojiStyle={EmojiStyle.NATIVE}
+                                emojiVersion="14.0"
+                            />
+                        )}
                     </div>
                 </div>
             </div>

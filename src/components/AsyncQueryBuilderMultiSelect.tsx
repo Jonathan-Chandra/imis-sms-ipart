@@ -45,7 +45,12 @@ export default function AsyncQueryBuilderMultiSelect({ loadOptions, onChange }: 
         <AsyncSelect
             isMulti
             loadOptions={loadOptions}
-            onChange={(selected) => onChange(selected.map(s => s.value))}
+            onChange={(selected) => {
+                const values = (selected ?? [])
+                    .map((option) => option.value)
+                    .filter((value): value is string => typeof value === 'string' && value.length > 0);
+                onChange(values);
+            }}
             className='rule-value' classNamePrefix='rule-value'
             styles={{
                 container: (base) => ({ ...base, width: '100%' }),

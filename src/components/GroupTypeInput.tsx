@@ -117,7 +117,9 @@ export default function GroupTypeInput({ onChange, initialGroupType = '' }: Prop
                             <option value=''>Select a Group Type</option>
                             {
                                 GroupTypes.map((group) => (
-                                    <option key={group.value} value={group.value}>{group.label}</option>
+                                    <option key={group.value} value={group.value} disabled={group.value === 'dynamic'}>
+                                        {group.value === 'dynamic' ? `${group.label} (Temporarily unavailable)` : group.label}
+                                    </option>
                                 ))
                             }
                         </select>

@@ -105,7 +105,7 @@ export const Gender = [
 export const SMSQueryBuilderFields: Field[] = [
     { name: 'GENDER', label: 'Gender', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}]},
     { name: 'MAJOR_KEY', label: 'NRDS ID', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
-    { name: 'LICENSE_NUMBER', label: 'License Number' },
+    { name: 'PRIMARY_RE_LICENSE_NUMBER', label: 'License Number' },
     { name: 'PRIMARY_OFFICE', label: 'Office', valueEditorType: 'multiselect' },
     { name: 'LOCAL_ASSOCIATION', label: 'Local Association', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
     { name: 'MEMBER_TYPE_CODE', label: 'Member Type', valueEditorType: 'multiselect', operators: [{name: 'in', label: 'in'}, {name: 'notIn', label: 'not in'}] },
@@ -119,11 +119,11 @@ export const SMSQueryBuilderFields: Field[] = [
  * Field definitions for the SMS query builder when the Committee group type is selected.
  *
  * Extends {@link SMSQueryBuilderFields} with committee-specific fields for
- * filtering by committee name and position.
+ * filtering by committee code and position code (`COMMITTEE_CODE`, `POSITION_CODE`).
  */
 export const SMSQueryBuilderCommitteeFields: Field[] = [...SMSQueryBuilderFields,
-{ name: 'COMMITTEE_NAME', label: 'Committee Name', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
-{ name: 'COMMITTEE_POSITION', label: 'Committee Position', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
+{ name: 'COMMITTEE_CODE', label: 'Committee Name', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
+{ name: 'POSITION_CODE', label: 'Committee Position', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
 ]
 
 /** Static list of available SMS recipient group types. */
@@ -199,7 +199,12 @@ export const LoadMemberOptions = async (inputValue: string): Promise<{ label: st
     if (response.status !== 200) {
         throw new Error('Failed to fetch member options');
     }
-    return response.data.Items.$values.map((c: any) => ({ label: c.label, value: c.value }));
+    return response.data.Items.$values
+        .map((c: any) => ({
+            label: c.label ?? c.FullName ?? c.MajorKey ?? c.ID ?? '',
+            value: c.value ?? c.MajorKey ?? c.ID ?? '',
+        }))
+        .filter((option: { label: string; value: string }) => option.value !== '');
 }
 
 
@@ -295,8 +300,8 @@ export const LoadOptionsMap: Record<string, (inputValue: string) => Promise<{ la
     'LOCAL_ASSOCIATION': LoadAssociationOptions,
     'PRIMARY_STATE_ASSOCIATION_ID': LoadAssociationOptions,
     'MAJOR_KEY': LoadMemberOptions,
-    'COMMITTEE_NAME': LoadCommitteeOptions,
-    'COMMITTEE_POSITION': LoadCommitteePositionOptions,
+    'COMMITTEE_CODE': LoadCommitteeOptions,
+    'POSITION_CODE': LoadCommitteePositionOptions,
     'GENDER': async () => Gender.map(g => ({ label: g.label, value: g.name })),
     'MEMBER_TYPE_CODE': async () => MemberTypes.map(m => ({ label: m.label, value: m.name })),
     'SECONDARY_OUT_OF_STATE': async () => [{ label: 'True', value: 'true' }, { label: 'False', value: 'false' }],

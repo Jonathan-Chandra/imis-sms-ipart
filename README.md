@@ -103,8 +103,8 @@ Field definitions live in `FormHelpers.tsx` in two lists:
 | Secondary Out of State | Async multi-select | Static list (True/False) |
 | License State | Async multi-select | iMIS state lookup query |
 | Join Date | Date | — |
-| Committee Name *(committee only)* | Async multi-select | iMIS committee lookup query |
-| Committee Position *(committee only)* | Async multi-select | iMIS committee position lookup query |
+| `COMMITTEE_CODE` — Committee Name *(committee only)* | Async multi-select | iMIS committee lookup query |
+| `POSITION_CODE` — Committee Position *(committee only)* | Async multi-select | iMIS committee position lookup query |
 
 ### Adding a new async multi-select field
 

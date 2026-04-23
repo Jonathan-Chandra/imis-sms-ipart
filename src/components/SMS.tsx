@@ -16,6 +16,7 @@ import { GroupTypes, SMSQueryBuilderCommitteeFields, SMSQueryBuilderFields } fro
 import type { Field, RuleGroupType } from 'react-querybuilder';
 import { formatQuery, defaultRuleProcessorSQL } from 'react-querybuilder';
 import api from '../api/Client';
+import axios from 'axios';
 
 type Props = {
 
@@ -57,7 +58,8 @@ type SMS = {
  */
 export default function SMS({ }: Props) {
     const params = new URLSearchParams(window.location.search);
-    const urlGroupType = GroupTypes.find(g => g.value === params.get('groupType'))?.value ?? '';
+    const requestedGroupType = params.get('groupType');
+    const urlGroupType = requestedGroupType === 'dynamic' ? '' : GroupTypes.find(g => g.value === requestedGroupType)?.value ?? '';
 
     const [showForm, setShowForm] = useState<boolean>(urlGroupType !== '');
     const [group, setGroup] = useState<{ groupType: string; groupName?: string | null }>({ groupType: urlGroupType, groupName: null });
@@ -65,6 +67,9 @@ export default function SMS({ }: Props) {
     const [message, setMessage] = useState<string>('');
     const [id, setId] = useState<string>('');
     const [queryFieldValues, setQueryFieldValues] = useState<Field[]>(urlGroupType === 'committee' ? SMSQueryBuilderCommitteeFields : SMSQueryBuilderFields);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] = useState<boolean>(false);
+    const [submissionMessage, setSubmissionMessage] = useState<string>('');
 
     useEffect(() => {
         const fetchLoggedInUser = async () => {
@@ -98,6 +103,11 @@ export default function SMS({ }: Props) {
     }
 
     const submitForm = async () => {
+        if (isSubmitting || hasSubmittedSuccessfully) {
+            return;
+        }
+        setIsSubmitting(true);
+        setSubmissionMessage('');
         //add submit logic here
         const iqaQueryNames: Record<string, string> = {
             member: import.meta.env.VITE_IMIS_SMS_MEMBER_GROUP_QUERY,
@@ -119,7 +129,32 @@ export default function SMS({ }: Props) {
                 Params: null,
             },
         };
-        console.log(JSON.stringify(payload, null, 2));
+        try {
+            const token = await axios.post(`${import.meta.env.VITE_AIRFLOW_BASE_URL}/auth/token`, {
+                username: import.meta.env.VITE_AIRFLOW_USERNAME,
+                password: import.meta.env.VITE_AIRFLOW_PASSWORD,
+            });
+            console.log(token.data);
+            const bearer_token = `Bearer ${token.data.access_token}`;
+            const response = await axios.post(`${import.meta.env.VITE_AIRFLOW_BASE_URL}/api/v2/dags/imis_twilio_sms/dagRuns`,
+                {
+                    logical_date: new Date().toISOString(),
+                    conf: payload
+                }, {
+                headers: {
+                    Authorization: bearer_token,
+                },
+            });
+            console.log(JSON.stringify(payload, null, 2));
+            console.log(response.data);
+            setHasSubmittedSuccessfully(true);
+            setSubmissionMessage('SMS job submitted successfully.');
+        } catch (error) {
+            setSubmissionMessage('Failed to submit SMS job. Please try again.');
+            throw error;
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -132,7 +167,10 @@ export default function SMS({ }: Props) {
             <div className={`form-section ${showForm ? 'visible' : 'hidden'}`}>
                 <SMSQueryBuilder fields={queryFieldValues} onChange={values => setQuery(values)} />
                 <SMSMessageInput onChange={values => setMessage(values)} />
-                <button type='button' onClick={submitForm}>Submit</button>
+                <button type='button' onClick={submitForm} disabled={isSubmitting || hasSubmittedSuccessfully}>
+                    {hasSubmittedSuccessfully ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit'}
+                </button>
+                {submissionMessage !== '' && <p>{submissionMessage}</p>}
             </div>
 
         </div>
