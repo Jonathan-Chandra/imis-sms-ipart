@@ -70,6 +70,7 @@ export default function SMS({ }: Props) {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] = useState<boolean>(false);
     const [submissionMessage, setSubmissionMessage] = useState<string>('');
+    const [isTest, setIsTest] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchLoggedInUser = async () => {
@@ -124,11 +125,13 @@ export default function SMS({ }: Props) {
                 ruleProcessor: (rule, options) => defaultRuleProcessorSQL({ ...rule, field: `mp."${rule.field}"` }, { ...options, quoteFieldNamesWith: ['', ''] }),
             }),
             Message: message,
+            Test: isTest,
             Iqa: {
                 QueryName: iqaQueryNames[group.groupType] ?? null,
                 Params: null,
             },
         };
+        console.log(JSON.stringify(payload, null, 2));
         try {
             const token = await axios.post(`${import.meta.env.VITE_AIRFLOW_BASE_URL}/auth/token`, {
                 username: import.meta.env.VITE_AIRFLOW_USERNAME,
@@ -145,7 +148,6 @@ export default function SMS({ }: Props) {
                     Authorization: bearer_token,
                 },
             });
-            console.log(JSON.stringify(payload, null, 2));
             console.log(response.data);
             setHasSubmittedSuccessfully(true);
             setSubmissionMessage('SMS job submitted successfully.');
@@ -167,7 +169,18 @@ export default function SMS({ }: Props) {
             <div className={`form-section ${showForm ? 'visible' : 'hidden'}`}>
                 <SMSQueryBuilder fields={queryFieldValues} onChange={values => setQuery(values)} />
                 <SMSMessageInput onChange={values => setMessage(values)} />
-                <button type='button' onClick={submitForm} disabled={isSubmitting || hasSubmittedSuccessfully}>
+                <div className='node'>
+                    <div className='PanelField Left'>
+                        <label htmlFor='isTest'>Test Mode</label>
+                        <div className='PanelFieldValue'>
+                            <label className='switch'>
+                                <input id='isTest' type='checkbox' checked={isTest} onChange={e => setIsTest(e.target.checked)} />
+                                <span className='slider round'></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button type='button' className="Button TextButton" onClick={submitForm} disabled={isSubmitting || hasSubmittedSuccessfully}>
                     {hasSubmittedSuccessfully ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit'}
                 </button>
                 {submissionMessage !== '' && <p>{submissionMessage}</p>}
