@@ -172,7 +172,7 @@ export default function SMS({ }: Props) {
                 <div className='node'>
                     <div className='PanelField Left'>
                         <label htmlFor='isTest'>Test Mode</label>
-                        <div className='PanelFieldValue'>
+                        <div className='PanelFieldValue sms-test-mode-switch-host'>
                             <label className='switch'>
                                 <input id='isTest' type='checkbox' checked={isTest} onChange={e => setIsTest(e.target.checked)} />
                                 <span className='slider round'></span>
@@ -184,6 +184,11 @@ export default function SMS({ }: Props) {
                     {hasSubmittedSuccessfully ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit'}
                 </button>
                 {submissionMessage !== '' && <p>{submissionMessage}</p>}
+                {hasSubmittedSuccessfully && (
+                    <button type="button" className="Button TextButton" onClick={() => window.location.reload()}>
+                        Refresh
+                    </button>
+                )}
             </div>
 
         </div>

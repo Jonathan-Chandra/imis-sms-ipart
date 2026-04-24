@@ -6,20 +6,36 @@
     padding-bottom: 0.4em;
 }
 
-.switch {
-    position: relative;
+/* Test mode toggle: iMIS often stretches labels / field cells to full width. */
+.sms-test-mode-switch-host {
     display: inline-block;
-    width: 3rem;
-    height: 1.5rem;
+    width: fit-content;
+    max-width: 100%;
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    align-self: flex-start;
 }
 
-.switch input {
+label.switch {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 3rem;
+    min-width: 3rem;
+    max-width: 3rem;
+    height: 1.5rem;
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+label.switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.slider {
+label.switch .slider {
     position: absolute;
     inset: 0;
     background-color: #ccc;
@@ -27,7 +43,7 @@
     cursor: pointer;
 }
 
-.slider:before {
+label.switch .slider:before {
     content: '';
     position: absolute;
     height: 1.1rem;
@@ -38,18 +54,18 @@
     transition: 0.2s;
 }
 
-input:checked + .slider {
+label.switch input:checked + .slider {
     background-color: #2196F3;
 }
 
-input:checked + .slider:before {
+label.switch input:checked + .slider:before {
     transform: translateX(1.5rem);
 }
 
-.slider.round {
+label.switch .slider.round {
     border-radius: 1.5rem;
 }
 
-.slider.round:before {
+label.switch .slider.round:before {
     border-radius: 50%;
 }
