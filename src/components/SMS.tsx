@@ -180,15 +180,17 @@ export default function SMS({ }: Props) {
                         </div>
                     </div>
                 </div>
-                <button type='button' className="Button TextButton" onClick={submitForm} disabled={isSubmitting || hasSubmittedSuccessfully}>
-                    {hasSubmittedSuccessfully ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit'}
-                </button>
-                {submissionMessage !== '' && <p>{submissionMessage}</p>}
-                {hasSubmittedSuccessfully && (
-                    <button type="button" className="Button TextButton" onClick={() => window.location.reload()}>
-                        Refresh
+                <div className="sms-submit-actions">
+                    <button type='button' className="Button TextButton" onClick={submitForm} disabled={isSubmitting || hasSubmittedSuccessfully}>
+                        {hasSubmittedSuccessfully ? 'Submitted' : isSubmitting ? 'Submitting...' : 'Submit'}
                     </button>
-                )}
+                    {hasSubmittedSuccessfully && (
+                        <button type="button" className="Button TextButton" onClick={() => window.location.reload()}>
+                            Refresh
+                        </button>
+                    )}
+                </div>
+                {submissionMessage !== '' && <p>{submissionMessage}</p>}
             </div>
 
         </div>
