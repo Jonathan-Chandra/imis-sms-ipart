@@ -122,8 +122,8 @@ export const SMSQueryBuilderFields: Field[] = [
  * filtering by committee code and position code (`COMMITTEE_CODE`, `POSITION_CODE`).
  */
 export const SMSQueryBuilderCommitteeFields: Field[] = [...SMSQueryBuilderFields,
-{ name: 'COMMITTEE_CODE', label: 'Committee Name', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
-{ name: 'POSITION_CODE', label: 'Committee Position', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
+{ name: 'COMMITTEE_NAME', label: 'Committee Name', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
+{ name: 'COMMITTEE_POSITION', label: 'Committee Position', valueEditorType: 'multiselect', operators: [{ name: 'in', label: 'in'}, {name:'notIn', label: 'not in'}] },
 ]
 
 /** Static list of available SMS recipient group types. */
